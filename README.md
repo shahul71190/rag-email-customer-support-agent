@@ -74,3 +74,12 @@ Portfolio project. Features and setup instructions should be updated to reflect 
 ## Author
 
 AI Automation Developer | n8n | AI Agents | RAG | API Integrations
+
+
+## Workflow Files
+
+### n8n Workflow Export
+Download the exported n8n workflow JSON:
+
+[View Workflow JSON](rag-email-support-agent.json)
+
