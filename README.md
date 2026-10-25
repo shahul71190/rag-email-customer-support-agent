@@ -49,8 +49,9 @@ rag-email-customer-support-agent/
 └── workflow/
     └── rag-email-support-agent.json
 ```
+## Screenshot
+<img width="1918" height="946" alt="Screenshot 2026-07-23 133607" src="https://github.com/user-attachments/assets/a6f237cc-ceae-404f-8089-0b4d661d7f63" />
 
-The screenshot and workflow JSON are planned example paths. Add these files only when you have them, and rename the paths to match the actual files in this repository.
 
 ## Setup
 
