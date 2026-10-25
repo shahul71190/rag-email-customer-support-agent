@@ -1,0 +1,429 @@
+{
+  "name": "RAG Customer Support Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            },
+            {}
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "id": "42127a82-31c4-4493-8e4f-392af8868034",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        384
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UDdmRw4bcCMBUEBj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=A customer sent the following email. Read the KNOWLEDGE BASE tool before answering, then write a short, polite reply email body (no subject, no signature block — just the message body).\n\nFROM: {{ $json.From || $json.from }}\nSUBJECT: {{ $json.Subject || $json.subject }}\n\nEMAIL BODY:\n{{ $json.text || $json.snippet }}",
+        "options": {
+          "systemMessage": "You are a professional customer support assistant for MotoricBD.\n\nAlways answer politely and professionally.\n\nBefore answering, ALWAYS call the company knowledge base tool to retrieve relevant information.\n\nIf the answer is not found in the retrieved knowledge, reply exactly:\n\"I couldn't find this information in the company knowledge base. Your request has been forwarded to our support team.\"\n\nDo not make up policies or information.\nKeep responses concise and email-friendly. Do not include a subject line or signature — only the reply body."
+        }
+      },
+      "id": "dfdc45f7-2cb6-46db-8981-a727a90190f5",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the MotoricBD company knowledge base (policies, hours, services, FAQ) to answer customer questions.",
+        "tableName": {
+          "__rl": true,
+          "value": "company_knowledge",
+          "mode": "list",
+          "cachedResultName": "company_knowledge"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "id": "7be5047d-a9bd-4550-96de-54bc3d472f3f",
+      "name": "search_knowledge_base",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        224
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Ra5d24Jo7j5jpbjv",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bbc8ac9c-20e3-4d0f-98ce-b61c2e18d422",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        432
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "3ycIb5SB8snqYV0e",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $json.id }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "a54df6c6-205e-4be3-945c-ba84908fdea8",
+      "name": "Send Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1424,
+        384
+      ],
+      "webhookId": "1687ca8e-83c5-407e-aada-3497050a96ac",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UDdmRw4bcCMBUEBj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "44783a89-c738-4972-81fa-54ede9a43dbc",
+      "name": "Run once to load KB",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8add38a5-6825-4617-9797-99a22ddfe4b6",
+              "name": "text",
+              "value": "About Us\nMotoricBD is a motorcycle workshop providing motorcycle servicing, accessories installation, engine diagnostics, electrical repairs, premium bike care, and maintenance services.\n\nBusiness Hours\nWe are open every day from 9:00 AM to 9:00 PM.\n\nShipping Policy\nOrders are processed within 24 hours. Delivery usually takes 2-5 business days. Customers receive a tracking number after shipment.\n\nReturn Policy\nProducts can be returned within 7 days of delivery if they are unused, undamaged, and in their original packaging. Customers must provide the purchase invoice.\n\nRefund Policy\nApproved refunds are processed within 5-7 business days. Shipping charges are non-refundable unless the wrong product was delivered.\n\nWarranty Policy\nElectrical products include a 30-day replacement warranty. Physical damage, water damage, and improper installation are not covered.\n\nPayment Methods\nWe accept Cash, bKash, Nagad, Rocket, Visa, MasterCard, and Bank Transfer.\n\nBooking Service\nCustomers can book motorcycle servicing online or by phone. Appointments are confirmed by email or phone call.\n\nService Packages\nRegular Service, Master Service, Premium Master Service.\n\nContact\nPhone: +8801717345856\nEmail: support@company.com\n\nFrequently Asked Questions\nQ: How long does servicing take?\nA: Usually 2-4 hours.\n\nQ: Can I cancel my booking?\nA: Yes, bookings can be cancelled before the scheduled service time.\n\nQ: Do you install accessories?\nA: Yes, we install headlights, fog lights, crash guards, mobile holders, and many other motorcycle accessories.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e3c6ab78-8884-4503-abed-4f2c1b22d0bd",
+      "name": "Knowledge Base Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "company_knowledge",
+          "mode": "list",
+          "cachedResultName": "company_knowledge"
+        },
+        "options": {}
+      },
+      "id": "e657c246-1c39-4cf7-b70a-82c6662d7093",
+      "name": "Supabase Vector Store (Insert Documents)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        656
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Ra5d24Jo7j5jpbjv",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "240a9510-ae30-4b8b-97f8-5442a6813994",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Gmail Trigger').item.json.threadId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        224
+      ],
+      "id": "12d8e30f-309f-41a4-bad8-5702c92fd4a5",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "vxQrUTJN0uRVmPdZ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        912,
+        384
+      ],
+      "id": "a582113d-9af5-476a-bb76-52bb123358aa",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4b8af17-174b-42dc-87e7-05e135c1f5f5",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "346d17ab-275c-4e93-bce2-5ec980930a74",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        384
+      ],
+      "id": "eae0bf6c-7d97-4194-b01a-165ee6bd5905",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "id": "b7091363-66c3-4278-82c4-1d92fea24391",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "uh28Szla4QBcGUwE",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_knowledge_base": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "search_knowledge_base",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store (Insert Documents)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run once to load KB": {
+      "main": [
+        [
+          {
+            "node": "Knowledge Base Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge Base Text": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store (Insert Documents)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store (Insert Documents)",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dfb0431d-7683-4fb5-9243-bc651e9e46a8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "afa6fef3181af2a5ecab8b732c7705e11f16f5b9a115acfea9bd90321cd70590"
+  },
+  "nodeGroups": [],
+  "id": "IpCiHoCIwNELSsOI",
+  "tags": []
+}
