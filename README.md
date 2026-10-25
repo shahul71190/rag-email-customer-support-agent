@@ -8,11 +8,13 @@ This project demonstrates how AI and automation can help customer support teams 
 
 ## Key Features
 
-- Email-driven customer support workflow
-- Retrieval of relevant information from a knowledge base
-- Context-aware response generation using a large language model (LLM)
-- Automated workflow orchestration with n8n
-- Modular design that can be adapted to different support use cases
+- AI-powered email customer support using Retrieval-Augmented Generation (RAG)
+- Retrieves relevant information from a knowledge base before generating responses
+- Uses n8n to orchestrate the automation workflow
+- Generates contextual responses using an integrated AI language model
+- Supports a modular workflow that can be adapted to different customer support use cases
+- Includes an n8n workflow screenshot and exported workflow JSON
+- Designed to reduce repetitive manual support tasks and improve response consistency
 
 ## How It Works
 
@@ -30,7 +32,6 @@ This project demonstrates how AI and automation can help customer support teams 
 - Email integration
 - Knowledge-base retrieval
 
-*Update this list to match the exact tools and services used in your implementation.*
 
 ## Use Cases
 
